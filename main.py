@@ -15,9 +15,8 @@ left_scroll = None
 right_scroll = None
 card_label = None
 collec_len = None
-show_no = None
-left_no = None
-right_no = None
+card_no = None
+show_card = None
 
 
 # ui
@@ -112,12 +111,11 @@ def create_card():
 
 #existing bt
 def view_existing():
-    global all_bts, all_labels, cols, rows, show_no, left_no, right_no
-    right_no = 1
-    left_no = 0
-    show_no = 0
+    global all_bts, all_labels, cols, rows, card_no, show_card
+    card_no = 2
     cols = -1
     rows = 1
+    show_card = 0
 
     try:
         for i in all_labels:
@@ -138,7 +136,6 @@ def view_existing():
             data = json.load(file)
             total_collection = len(data.keys()) 
             all_collection_keys =[i for i in data.keys()]
-            all_collection_values = [j for i,j in data.items()]
             
 
             def collec_func(collection_name):
@@ -160,72 +157,52 @@ def view_existing():
                 back_bt = Button(text="Back",font=FONT, command=view_existing)
                 back_bt.grid(column=2, row=0,padx=20, pady=10)
                 all_bts.append(back_bt)
-
                 logo.config(file='front.png')
                 card_label = Label(text=data[collection_name][0]['title'], image=logo, compound="center", anchor="center", font=('times', 35, 'bold'))
                 card_label.config(fg="white")
                 card_label.grid(column=1, row=1)
                 all_labels.append(card_label)
                 
-                def right_skip(right_no):
-                    global left_scroll, right_scroll, card_label, collec_len, show_no, left_no
-                    card_label['text'] = data[collection_name][right_no ]['title']
+                def right_skip(card_no):
+                    global left_scroll, right_scroll, card_label, collec_len, show_card
+                    card_label['text'] = data[collection_name][card_no - 1 ]['title']
 
-                    if left_no > 0:
-                        left_scroll.config(state=NORMAL)
-                    
+                    show_card += 1
+                    right_scroll.config(command=lambda:right_skip(card_no + 1))
+                    left_scroll.config(command=lambda:left_skip(card_no - 1))
+                    left_scroll.config(state=NORMAL)
 
-                    if collec_len > right_no:
-                        left_scroll.config(state=NORMAL)
-                        left_no += 1
-                        right_scroll.config(command=lambda:right_skip(right_no + 1))
-                        show_no += 1
-
-                    elif collec_len == right_no:
-                        show_no += 1
-                        left_no += 1
+                    if card_no - 1 == collec_len:
                         right_scroll.config(state=DISABLED)
+                       
+                def left_skip(card_no):
+                    global left_scroll, right_scroll, card_label, collec_len, show_card
+                    card_label['text'] = data[collection_name][card_no - 1 ]['title']
 
-                def left_skip(left_no):
-                    global left_scroll, right_scroll, card_label, collec_len, show_no, right_no
-                    
-                    if right_no >= 0:
-                        right_scroll.config(state=NORMAL)
-                    
-                    if  right_no < left_no:
-                        left_no -= 1
-                        right_scroll.config(state=NORMAL)        
-                        if left_no <= 0:
-                            left_scroll.config(state=DISABLED)
-                        card_label['text'] = data[collection_name][left_no]['title']
-                        # left_scroll.config(state=NORMAL)
-                        right_no -= 1
-                        left_scroll.config(command=lambda:left_skip(left_no))
-                        show_no -= 1
-                        
+                    show_card -= 1
+                    right_scroll.config(command=lambda:right_skip(card_no + 1))
+                    left_scroll.config(command=lambda:left_skip(card_no - 1))
+                    right_scroll.config(state=NORMAL)
                     
 
-                left_scroll = Button(text='<<<' , command=lambda:left_skip(left_no))
-                if collec_len == 0 and left_no == 0:
-                    left_scroll.config(state=DISABLED)
+                    if card_no - 1 == 0:
+                        left_scroll.config(state=DISABLED)
+
+                left_scroll = Button(text='<<<' , command=left_skip, state=DISABLED)
                 left_scroll.grid(column=0, row=2)
                 
                 all_bts.append(left_scroll)
 
-                right_scroll = Button(text='>>>', command=lambda:right_skip(right_no))
+                right_scroll = Button(text='>>>', command=lambda:right_skip(card_no))
                 right_scroll.grid(column=2, row=2)
-                if collec_len == 0:
-                    right_scroll.config(state=DISABLED)
                 all_bts.append(right_scroll)
 
-                def show_cont(right_no):
+                def show_cont(show_card):
                     global left_scroll, right_scroll, card_label, collec_len
-                    card_label['text'] = data[collection_name][right_no ]['content']
+                    card_label['text'] = data[collection_name][show_card]['content']
 
-                show_bt = Button(text='Show', font=FONT, command=lambda:show_cont(show_no))
+                show_bt = Button(text='Show', font=FONT, command=lambda:show_cont(show_card))
                 show_bt.grid(column=1, row=2, pady=20)
-                if collec_len == 0:
-                    show_bt.config(state=DISABLED)
                 all_bts.append(show_bt)
 
             for _ in range (total_collection):
@@ -238,9 +215,7 @@ def view_existing():
                 collec_bt = Button(text=all_collection_keys[_], font=FONT, command= lambda k=_: collec_func(all_collection_keys[k]))
                 collec_bt.grid(row=rows, column=cols, padx=40, pady=20)
                 all_bts.append(collec_bt)
-                
-            
-        
+                 
 
     except:
         messagebox.showerror(title='FILE NOT FOUND', message="There no existing collection !")
