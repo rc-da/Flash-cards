@@ -158,7 +158,7 @@ def view_existing():
                 back_bt.grid(column=2, row=0,padx=20, pady=10)
                 all_bts.append(back_bt)
                 logo.config(file='front.png')
-                card_label = Label(text=data[collection_name][0]['title'], image=logo, compound="center", anchor="center", font=('times', 35, 'bold'))
+                card_label = Label(text=data[collection_name][0]['title'], image=logo, compound="center", anchor="center", font=('times', 30, 'bold'), justify=CENTER, wraplength=180)
                 card_label.config(fg="white")
                 card_label.grid(column=1, row=1)
                 all_labels.append(card_label)
