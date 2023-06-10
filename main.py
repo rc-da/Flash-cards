@@ -33,32 +33,36 @@ def add_to_file():
     collec_title = collec_input.get()
     card_title = card_title_input.get()
     card_cont = card_cont_input.get('1.0', END).strip('\n')
-    collec_of_title .append(collec_title)
 
-    card_data = {
-                 collec_title : [{ 'title' : card_title, 'content' : card_cont}]
-                }
+    if collec_title and card_title and card_cont :
+        collec_of_title .append(collec_title)
 
-    try:
-        with open('cards.json', 'r') as file:
-            data = json.load(file)
-            
-            if collec_title in data:
-                data[collec_title].extend(card_data[collec_title])
+        card_data = {
+                    collec_title : [{ 'title' : card_title, 'content' : card_cont}]
+                    }
 
-            else:
-                data.update(card_data)
+        try:
+            with open('cards.json', 'r') as file:
+                data = json.load(file)
+                
+                if collec_title in data:
+                    data[collec_title].extend(card_data[collec_title])
 
-        with open('cards.json', 'w') as file:
-            json.dump(data, file, indent=4)
+                else:
+                    data.update(card_data)
 
-    except :
-        with open('cards.json', 'w') as file:
-            json.dump(card_data, file, indent=4)
-            
-    finally:
-        card_title_input.delete(0, END)
-        card_cont_input.delete('1.0', END)
+            with open('cards.json', 'w') as file:
+                json.dump(data, file, indent=4)
+
+        except :
+            with open('cards.json', 'w') as file:
+                json.dump(card_data, file, indent=4)
+                
+        finally:
+            card_title_input.delete(0, END)
+            card_cont_input.delete('1.0', END)
+    else:
+        messagebox.showerror(title='Empty field values!', message='Fill all the fields !')
 
 
 # to create cards
@@ -167,26 +171,27 @@ def view_existing():
                     global left_scroll, right_scroll, card_label, collec_len, show_card
                     card_label['text'] = data[collection_name][card_no - 1 ]['title']
 
+                    if card_no - 1 == collec_len:
+                        right_scroll.config(state=DISABLED)
                     show_card += 1
                     right_scroll.config(command=lambda:right_skip(card_no + 1))
                     left_scroll.config(command=lambda:left_skip(card_no - 1))
                     left_scroll.config(state=NORMAL)
 
-                    if card_no - 1 == collec_len:
-                        right_scroll.config(state=DISABLED)
+                    
                        
                 def left_skip(card_no):
                     global left_scroll, right_scroll, card_label, collec_len, show_card
                     card_label['text'] = data[collection_name][card_no - 1 ]['title']
 
+                    if card_no - 1 == 0:
+                        left_scroll.config(state=DISABLED)
                     show_card -= 1
                     right_scroll.config(command=lambda:right_skip(card_no + 1))
                     left_scroll.config(command=lambda:left_skip(card_no - 1))
                     right_scroll.config(state=NORMAL)
                     
 
-                    if card_no - 1 == 0:
-                        left_scroll.config(state=DISABLED)
 
                 left_scroll = Button(text='<<<' , command=left_skip, state=DISABLED)
                 left_scroll.grid(column=0, row=2)
@@ -194,6 +199,8 @@ def view_existing():
                 all_bts.append(left_scroll)
 
                 right_scroll = Button(text='>>>', command=lambda:right_skip(card_no))
+                if card_no  > collec_len:
+                        right_scroll.config(state=DISABLED)
                 right_scroll.grid(column=2, row=2)
                 all_bts.append(right_scroll)
 
